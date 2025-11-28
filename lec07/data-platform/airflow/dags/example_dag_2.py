@@ -1,12 +1,12 @@
-from datetime import timedelta
 import json
 import logging
 import random
 import uuid
+from datetime import timedelta
+
 import pandas as pd
 from airflow.decorators import dag, task
 from airflow.utils.dates import days_ago
-
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta
 import random
+from datetime import datetime, timedelta
+
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator

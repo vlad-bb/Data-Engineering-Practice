@@ -91,39 +91,39 @@ graph TD
         users1 --- analytics_ro[Read-Only User]
         users1 --- etl_user[ETL User]
     end
-    
+
     subgraph "PostgreSQL Airflow"
         db2[Airflow Metastore] --- tables[Airflow Tables]
         db2 --- users2[Users]
         users2 --- airflow_admin[Admin User]
         users2 --- airflow_ro[Read-Only User]
     end
-    
+
     subgraph "Airflow"
         webserver[Airflow Webserver] --- scheduler[Airflow Scheduler]
         webserver --- airflow_cfg[airflow.cfg]
         webserver --- entrypoint[entrypoint.sh]
         scheduler --- airflow_cfg
         scheduler --- entrypoint
-        
+
         subgraph "DAGs & Plugins"
             dags[DAG Files] --- custom_dag[custom_dbt_dag.py]
             plugins[Plugins] --- dbt_hook[dbt_hook.py]
             plugins --- dbt_operator[dbt_operator.py]
         end
-        
+
         webserver --- dags
         webserver --- plugins
         scheduler --- dags
         scheduler --- plugins
     end
-    
+
     subgraph "DBT"
         dbt_project[dbt Project] --- models[Models]
         dbt_project --- macros[Macros]
         dbt_project --- profiles[profiles.yml]
     end
-    
+
     %% Connections
     etl_user -->|writes| raw
     etl_user -->|writes| analytics
@@ -144,18 +144,38 @@ graph TD
 ### Installation
 
 1. Clone this repository:
+
 ```bash
 git clone https://github.com/robot-dreams-code/UA_DATA-ENGINEERING_KHOROSHYKH.git/lecture_07.git
 cd data-platform
 ```
 
-2. Create a `.env` file with required environment variables (see `.env.example`):
+2. Create virtual envoriment
+
+`python -m venv .venv`
+
+3. Activate virtual enviroment
+
+`source .venv/bin/activate` (Linux/Mac)  
+`.\.venv\Scripts\activate` (Windows)
+
+4. Install python packages
+
+`pip install -r requirements.txt`
+
+5. Generate secret keys for Airflow:
+
+`python run_generate_airflow_secrets.py`
+
+6. Create a `.env` file with required environment variables (see `.env.example`):
+
 ```bash
 cp .env.example .env
 # Edit .env file with your preferred settings
 ```
 
-3. Build and start the containers:
+7. Build and start the containers:
+
 ```bash
 docker-compose up -d
 ```
@@ -194,6 +214,7 @@ Airflow integrates with dbt through custom operators and hooks:
 ### Environment Variables
 
 The `.env` file contains all configuration values including:
+
 - Database credentials
 - Service configurations
 - Security tokens
@@ -201,6 +222,7 @@ The `.env` file contains all configuration values including:
 ### PostgreSQL Configuration
 
 Both PostgreSQL instances are tuned for their specific workloads:
+
 - Analytics database: Optimized for data warehousing queries
 - Airflow metastore: Configured for operational workloads
 

@@ -1,4 +1,6 @@
 # iris_ml_processor.py
+import os
+
 import pandas as pd
 import psycopg2
 import psycopg2.extras
@@ -6,7 +8,7 @@ import sklearn
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sqlalchemy import create_engine
-import os
+
 
 def process_iris_data(**kwargs):
     """

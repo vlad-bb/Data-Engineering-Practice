@@ -1,8 +1,8 @@
 # airflow/plugins/dbt_hook.py
+import json
 import os
 import subprocess
-import json
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from airflow.hooks.base import BaseHook
 

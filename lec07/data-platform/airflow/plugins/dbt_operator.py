@@ -1,5 +1,5 @@
 # airflow/plugins/dbt_operator.py
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults

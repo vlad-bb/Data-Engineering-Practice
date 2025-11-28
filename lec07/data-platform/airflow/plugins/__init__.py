@@ -1,6 +1,7 @@
 from airflow.plugins_manager import AirflowPlugin
-from dbt_operator import DbtOperator
 from dbt_hook import DbtHook
+from dbt_operator import DbtOperator
+
 
 class DbtPlugin(AirflowPlugin):
     name = "dbt_plugin"

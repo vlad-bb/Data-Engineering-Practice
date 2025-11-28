@@ -1,9 +1,8 @@
 # airflow/dags/custom_dbt_dag.py
-from airflow import DAG
-from datetime import timedelta
-from datetime import datetime
 import os
+from datetime import datetime, timedelta
 
+from airflow import DAG
 # Import our custom operator
 from dbt_operator import DbtOperator
 

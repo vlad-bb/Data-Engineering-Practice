@@ -1,10 +1,11 @@
+from typing import List
+
 from airflow import DAG
-from airflow.utils.dates import days_ago
 from airflow.decorators import task
 from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
 from airflow.operators.empty import EmptyOperator
-from typing import List
+from airflow.operators.python import PythonOperator
+from airflow.utils.dates import days_ago
 
 """
 Example Airflow DAG using TaskFlow API mixed with classic operators.
