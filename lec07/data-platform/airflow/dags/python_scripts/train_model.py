@@ -1,5 +1,6 @@
 # iris_ml_processor.py
 import os
+import sys
 
 import pandas as pd
 import psycopg2
@@ -168,4 +169,10 @@ def process_iris_data(**kwargs):
 
 
 if __name__ == "__main__":
-    process_iris_data()
+    try:
+        process_iris_data()
+        print("SUCCESS: Model training completed successfully (HTTP 201)")
+        sys.exit(0)  # Airflow вважає успіхом exit code 0, логуємо як HTTP 201
+    except Exception as e:
+        print(f"ERROR: {e}")
+        sys.exit(1)

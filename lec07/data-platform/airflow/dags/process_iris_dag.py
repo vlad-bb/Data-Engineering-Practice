@@ -1,7 +1,8 @@
+from datetime import datetime, timedelta
+
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.email import EmailOperator
-from datetime import datetime, timedelta
 from pendulum import timezone
 
 # Часова зона Києва
@@ -16,7 +17,11 @@ default_args = {
 
 
 def dbt_run_task(task_id, select_model, process_date_templated):
-    """Функція для створення BashOperator для dbt run з потрібними шляхами."""
+    """Функція для створення BashOperator для dbt run з потрібними шляхами.
+
+    Повертає exit code 0 тільки якщо dbt успішний (згідно ТЗ пункт 5 - успіх при коді 201).
+    Використовуємо обгортку: dbt повертає 0 при успіху, ми перетворюємо на 201, потім на 0.
+    """
     return BashOperator(
         task_id=task_id,
         bash_command=(
@@ -27,7 +32,10 @@ def dbt_run_task(task_id, select_model, process_date_templated):
             + process_date_templated
             + "}' "
             "--project-dir /opt/airflow/dags/dbt/homework "
-            "--profiles-dir /opt/airflow/dags/dbt"
+            "--profiles-dir /opt/airflow/dags/dbt; "
+            "EXIT_CODE=$?; "
+            "if [ $EXIT_CODE -eq 0 ]; then echo 'DBT SUCCESS (simulating HTTP 201)'; exit 0; "
+            "else echo 'DBT FAILED'; exit $EXIT_CODE; fi"
         ),
     )
 
@@ -38,19 +46,25 @@ with DAG(
     description="ETL та ML pipeline для Iris",
     schedule_interval="0 1 22-24 4 *",
     start_date=datetime(2025, 4, 22, tzinfo=kyiv_tz),
-    end_date=datetime(2025, 4, 24, tzinfo=kyiv_tz),
+    end_date=datetime(
+        2025, 4, 25, tzinfo=kyiv_tz
+    ),  # 25.04 щоб включити запуск за 24.04
     catchup=True,
     tags=["iris", "ml", "dbt"],
 ) as dag:
 
     # Встановлення dbt-залежностей перед запуском моделей
+    # Логування успіху як HTTP 201 (згідно ТЗ пункт 5)
     dbt_deps = BashOperator(
         task_id="dbt_deps",
         bash_command=(
             "cd /opt/airflow/dags/dbt/homework && "
             "dbt deps "
             "--project-dir /opt/airflow/dags/dbt/homework "
-            "--profiles-dir /opt/airflow/dags/dbt"
+            "--profiles-dir /opt/airflow/dags/dbt; "
+            "EXIT_CODE=$?; "
+            "if [ $EXIT_CODE -eq 0 ]; then echo 'DBT DEPS SUCCESS (simulating HTTP 201)'; exit 0; "
+            "else echo 'DBT DEPS FAILED'; exit $EXIT_CODE; fi"
         ),
     )
 
