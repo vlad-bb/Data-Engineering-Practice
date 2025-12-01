@@ -6,10 +6,12 @@
         'petal_width',
     ]
 %}
+{% set process_date = var('process_date', none) %}
 
 with import_iris as (
     select *
     from {{ ref('stg_iris') }}
+    -- Датасет Iris не містить колонки з датою, тому фільтрація не застосовується
 )
 select
     sepal_length,
@@ -118,4 +120,4 @@ species,
             source_relation=ref('stg_iris')
         )
     }}
-from {{ ref('stg_iris') }}
+from import_iris

@@ -1,3 +1,8 @@
+"""
+Install required package:
+    pip install cryptography
+"""
+
 import os
 
 from cryptography.fernet import Fernet

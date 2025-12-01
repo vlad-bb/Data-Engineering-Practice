@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: analytics
-    schema: "{{ target.schema }}"
+    schema: analytics
     tables:
       - name: iris_dataset
         description: "The Iris flower dataset"
