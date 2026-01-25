@@ -1,0 +1,29 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: spark-cluster-eks
+  region: eu-north-1
+  version: "1.31"
+
+iam:
+  withOIDC: true
+
+managedNodeGroups:
+  - name: spark-worker-nodes
+    instanceType: t3.small
+    spot: true
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 3
+    volumeSize: 20
+    ssh:
+      allow: true
+    iam:
+      withAddonPolicies:
+        cloudWatch: true
+      attachPolicyARNs:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy          # БАЗОВА ПОЛІТИКА
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy               # БАЗОВА ПОЛІТИКА
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly  # ДЛЯ ЗАВАНТАЖЕННЯ ОБРАЗІВ
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess                 # ВАША ПОЛІТИКА ДЛЯ ДАНИХ
