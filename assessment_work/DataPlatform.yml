@@ -188,6 +188,7 @@ Resources:
   # ===== S3 BUCKETS =====
   DataLakeBucket:
     Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
     Properties:
       BucketName: !Sub '${ProjectName}-data-lake-${AWS::AccountId}'
       VersioningConfiguration:
@@ -200,6 +201,7 @@ Resources:
 
   AirflowBucket:
     Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
     Properties:
       BucketName: !Ref AirflowS3BucketName
       VersioningConfiguration:
@@ -212,6 +214,7 @@ Resources:
 
   AthenaBucket:
     Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
     Properties:
       BucketName: !Sub '${ProjectName}-athena-results-${AWS::AccountId}'
       PublicAccessBlockConfiguration:
@@ -479,6 +482,7 @@ Resources:
   # ===== GLUE RESOURCES =====
   GlueDatabase:
     Type: AWS::Glue::Database
+    DeletionPolicy: Retain
     Properties:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:

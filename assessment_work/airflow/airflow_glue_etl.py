@@ -1,6 +1,7 @@
+from datetime import datetime
+
 from airflow import DAG
 from airflow.providers.amazon.aws.operators.glue import AwsGlueJobOperator
-from datetime import datetime
 
 # Define default arguments for the DAG
 default_args = {

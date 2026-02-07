@@ -1,9 +1,11 @@
 # Example of how to use S3ToRedshiftOperator
 
 from datetime import datetime, timedelta
+
 from airflow import DAG
-from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
+from airflow.providers.amazon.aws.transfers.s3_to_redshift import \
+    S3ToRedshiftOperator
 
 # Replace these with your own values. You will need to create a Connection
 # in the Apache Airflow Admin section using the Amazon Redshift connection type
