@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  ProjectName:
+    Type: String
+  AirflowS3BucketName:
+    Type: String
+Resources:
+  DataLakeBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub '${ProjectName}-data-lake-${AWS::AccountId}'
+  AirflowBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Ref AirflowS3BucketName
+  AthenaBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub '${ProjectName}-athena-results-${AWS::AccountId}'
+  BronzeDatabase:
+    Type: AWS::Glue::Database
+    DeletionPolicy: Retain
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: 'bronze'
+  SilverDatabase:
+    Type: AWS::Glue::Database
+    DeletionPolicy: Retain
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: 'silver'
+  GoldDatabase:
+    Type: AWS::Glue::Database
+    DeletionPolicy: Retain
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: 'gold'

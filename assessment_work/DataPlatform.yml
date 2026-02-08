@@ -252,6 +252,9 @@ Resources:
                 Resource:
                   - !Sub 'arn:aws:s3:::${DataLakeBucket}/*'
                   - !Sub 'arn:aws:s3:::${DataLakeBucket}'
+                  - !Sub 'arn:aws:s3:::${AirflowBucket}/*'
+                  - !Sub 'arn:aws:s3:::${AirflowBucket}'
+
         - PolicyName: GlueRedshiftAccess
           PolicyDocument:
             Version: '2012-10-17'
@@ -480,40 +483,59 @@ Resources:
                 Resource: '*'
 
   # ===== GLUE RESOURCES =====
-  GlueDatabase:
+  BronzeDatabase:
     Type: AWS::Glue::Database
     DeletionPolicy: Retain
     Properties:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
-        Name: !Sub '${ProjectName}_database'
-        Description: 'Main database for data platform'
+        Name: 'bronze'
+        Description: 'Bronze layer - raw data as tables'
+
+  SilverDatabase:
+    Type: AWS::Glue::Database
+    DeletionPolicy: Retain
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: 'silver'
+        Description: 'Silver layer - cleaned and partitioned parquet data'
+
+  GoldDatabase:
+    Type: AWS::Glue::Database
+    DeletionPolicy: Retain
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: 'gold'
+        Description: 'Gold layer - enriched data for analytics'
 
   GlueCrawler:
     Type: AWS::Glue::Crawler
     Properties:
       Name: !Sub '${ProjectName}-s3-crawler'
       Role: !GetAtt GlueServiceRole.Arn
-      DatabaseName: !Ref GlueDatabase
+      DatabaseName: !Ref BronzeDatabase
       Targets:
         S3Targets:
-          - Path: !Sub '${DataLakeBucket}/raw/'
+          - Path: !Sub 's3://${DataLakeBucket}/raw/sales/'
             Exclusions:
               - '**/_temporary/**'
               - '**/.spark-staging/**'
+              - '**/.DS_Store'
               - '**/.DS_Store/**'
-          - Path: !Sub '${DataLakeBucket}/bronze/'
+          - Path: !Sub 's3://${DataLakeBucket}/raw/customers/'
             Exclusions:
               - '**/_temporary/**'
               - '**/.spark-staging/**'
-          - Path: !Sub '${DataLakeBucket}/silver/'
+              - '**/.DS_Store'
+              - '**/.DS_Store/**'
+          - Path: !Sub 's3://${DataLakeBucket}/raw/user_profiles/'
             Exclusions:
               - '**/_temporary/**'
               - '**/.spark-staging/**'
-          - Path: !Sub '${DataLakeBucket}/gold/'
-            Exclusions:
-              - '**/_temporary/**'
-              - '**/.spark-staging/**'
+              - '**/.DS_Store'
+              - '**/.DS_Store/**'
       SchemaChangePolicy:
         UpdateBehavior: UPDATE_IN_DATABASE
         DeleteBehavior: LOG
@@ -533,15 +555,33 @@ Resources:
     Properties:
       Name: !Sub '${ProjectName}-redshift-crawler'
       Role: !GetAtt GlueServiceRole.Arn
-      DatabaseName: !Ref GlueDatabase
+      DatabaseName: !Ref BronzeDatabase
       Targets:
         JdbcTargets:
           - ConnectionName: !Ref RedshiftConnectionAZ1
-            Path: 'datawarehouse/%'
+            Path: 'dev/%'
             Exclusions:
               - 'information_schema/%'
               - 'pg_catalog/%'
               - 'pg_toast/%'
+      SchemaChangePolicy:
+        UpdateBehavior: UPDATE_IN_DATABASE
+        DeleteBehavior: LOG
+
+  SilverCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: !Sub '${ProjectName}-silver-crawler'
+      Role: !GetAtt GlueServiceRole.Arn
+      DatabaseName: !Ref SilverDatabase
+      Targets:
+        S3Targets:
+          - Path: !Sub 's3://${DataLakeBucket}/silver/sales/'
+          - Path: !Sub 's3://${DataLakeBucket}/silver/customers/'
+          - Path: !Sub 's3://${DataLakeBucket}/silver/user_profiles/'
+            Exclusions:
+              - '**/_temporary/**'
+              - '**/.spark-staging/**'
       SchemaChangePolicy:
         UpdateBehavior: UPDATE_IN_DATABASE
         DeleteBehavior: LOG
@@ -560,6 +600,70 @@ Resources:
     Properties:
       GroupDescription: Redshift SG
       VpcId: !Ref VPC
+
+  # ===== GLUE JOBS =====
+  ProcessSalesJob:
+    Type: AWS::Glue::Job
+    Properties:
+      Name: !Sub '${ProjectName}-process-sales'
+      Role: !GetAtt GlueServiceRole.Arn
+      Command:
+        Name: glueetl
+        ScriptLocation: !Sub 's3://${AirflowBucket}/scripts/process_sales.py'
+        PythonVersion: '3'
+      DefaultArguments:
+        '--job-language': 'python'
+        '--TempDir': !Sub 's3://${AirflowBucket}/temporary/'
+        '--enable-metrics': 'true'
+        '--enable-continuous-cloudwatch-log': 'true'
+        '--BRONZE_DATABASE': !Ref BronzeDatabase
+        '--SILVER_DATABASE': !Ref SilverDatabase
+        '--DATA_LAKE_BUCKET': !Ref DataLakeBucket
+      GlueVersion: '4.0'
+      WorkerType: G.1X
+      NumberOfWorkers: 2
+
+  ProcessCustomersJob:
+    Type: AWS::Glue::Job
+    Properties:
+      Name: !Sub '${ProjectName}-process-customers'
+      Role: !GetAtt GlueServiceRole.Arn
+      Command:
+        Name: glueetl
+        ScriptLocation: !Sub 's3://${AirflowBucket}/scripts/process_customers.py'
+        PythonVersion: '3'
+      DefaultArguments:
+        '--job-language': 'python'
+        '--TempDir': !Sub 's3://${AirflowBucket}/temporary/'
+        '--enable-metrics': 'true'
+        '--enable-continuous-cloudwatch-log': 'true'
+        '--BRONZE_DATABASE': !Ref BronzeDatabase
+        '--SILVER_DATABASE': !Ref SilverDatabase
+        '--DATA_LAKE_BUCKET': !Ref DataLakeBucket
+      GlueVersion: '4.0'
+      WorkerType: G.1X
+      NumberOfWorkers: 2
+
+  ProcessUserProfilesJob:
+    Type: AWS::Glue::Job
+    Properties:
+      Name: !Sub '${ProjectName}-process-user-profiles'
+      Role: !GetAtt GlueServiceRole.Arn
+      Command:
+        Name: glueetl
+        ScriptLocation: !Sub 's3://${AirflowBucket}/scripts/process_user_profiles.py'
+        PythonVersion: '3'
+      DefaultArguments:
+        '--job-language': 'python'
+        '--TempDir': !Sub 's3://${AirflowBucket}/temporary/'
+        '--enable-metrics': 'true'
+        '--enable-continuous-cloudwatch-log': 'true'
+        '--BRONZE_DATABASE': !Ref BronzeDatabase
+        '--SILVER_DATABASE': !Ref SilverDatabase
+        '--DATA_LAKE_BUCKET': !Ref DataLakeBucket
+      GlueVersion: '4.0'
+      WorkerType: G.1X
+      NumberOfWorkers: 2
 
   # Glue Connection for Redshift
   RedshiftConnectionAZ1:
@@ -1003,9 +1107,10 @@ Resources:
           MountPoints:
             - SourceVolume: airflow-dags
               ContainerPath: /opt/airflow/dags
-          Command:
-            - sh
+          EntryPoint:
+            - /bin/sh
             - -c
+          Command:
             - |
               echo "Starting DAG sync from S3 to EFS..."
               echo "S3 Bucket: $S3_BUCKET"
@@ -1209,7 +1314,7 @@ Outputs:
 
   GlueDatabaseName:
     Description: 'Glue Database Name'
-    Value: !Ref GlueDatabase
+    Value: !Ref BronzeDatabase
     Export:
       Name: !Sub '${ProjectName}-database'
 
