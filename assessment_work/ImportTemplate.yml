@@ -41,3 +41,8 @@ Resources:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
         Name: 'gold'
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    DeletionPolicy: Retain
+    Properties:
+      ClusterName: !Sub '${ProjectName}-airflow-cluster'

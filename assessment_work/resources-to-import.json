@@ -40,5 +40,12 @@
         "ResourceIdentifier": {
             "DatabaseName": "gold"
         }
+    },
+    {
+        "ResourceType": "AWS::ECS::Cluster",
+        "LogicalResourceId": "ECSCluster",
+        "ResourceIdentifier": {
+            "ClusterName": "data-platform-airflow-cluster"
+        }
     }
 ]

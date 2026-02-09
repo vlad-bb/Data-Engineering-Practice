@@ -171,3 +171,18 @@ client_id, first_name, last_name, email, registration_date, state
 1. Поцікавтесь, що робить вираз `MERGE` в SQL. Можливо, він стане у нагоді.
 2. В контексті виконання цього завдання ви маєте спробувати на практиці наступні 
 дата інженерні підходи роботи з даними, а саме: Data Cleansing, Data Wrangling та Data Enrichment
+
+
+## Результат виконання
+
+### 1. Запуск пайплайнів в Airflow
+![Airflow](media/airflow_dags.png)
+
+### 2. Glue ETL jobs
+![Glue ETL](media/glue_jobs.png)
+
+### 3. Data Catalog with Medalian Architecture
+![Data Catalog](media/data_catalog.png)
+
+### 4. Redshift Query Result
+![Redshift Query](media/redshift_final_query.png)
