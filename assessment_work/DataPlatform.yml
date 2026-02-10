@@ -416,15 +416,66 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
+              # Glue: restrict to common job and catalog operations
               - Effect: Allow
                 Action:
-                  - glue:*
-                  - s3:*
-                  - athena:*
-                  - redshift:*
-                  - logs:*
+                  - glue:GetJob
+                  - glue:GetJobs
+                  - glue:StartJobRun
+                  - glue:GetJobRun
+                  - glue:GetJobRuns
+                  - glue:GetDatabase
+                  - glue:GetDatabases
+                  - glue:GetTable
+                  - glue:GetTables
+                  - glue:GetPartition
+                  - glue:GetPartitions
+                  - glue:BatchGetPartition
+                  - glue:CreateJob
+                  - glue:UpdateJob
                 Resource: '*'
 
+              # S3: restrict to the Airflow DAGs/config bucket
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub 'arn:aws:s3:::${AirflowS3BucketName}'
+                  - !Sub 'arn:aws:s3:::${AirflowS3BucketName}/*'
+
+              # Athena: restrict to query lifecycle operations
+              - Effect: Allow
+                Action:
+                  - athena:StartQueryExecution
+                  - athena:GetQueryExecution
+                  - athena:GetQueryResults
+                  - athena:StopQueryExecution
+                  - athena:GetWorkGroup
+                  - athena:ListWorkGroups
+                Resource: '*'
+
+              # Redshift: use Redshift Data API, not blanket redshift:*
+              - Effect: Allow
+                Action:
+                  - redshift-data:ExecuteStatement
+                  - redshift-data:DescribeStatement
+                  - redshift-data:GetStatementResult
+                  - redshift-data:ListStatements
+                  - redshift-data:CancelStatement
+                Resource: '*'
+
+              # CloudWatch Logs: restrict to log groups for this project
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                Resource:
+                  - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/ecs/${ProjectName}-*:*'
   AirflowTaskRole:
     Type: AWS::IAM::Role
     Properties:
