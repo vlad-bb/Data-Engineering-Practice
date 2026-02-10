@@ -63,4 +63,4 @@ aws cloudformation deploy \
 ```bash
 aws cloudformation delete-stack --stack-name data-platform-production --region eu-north-1
 ```
-Данні в S3 та метадані в Glue залишаться для наступного сеансу.
+Дані в S3 та метадані в Glue залишаться для наступного сеансу.
