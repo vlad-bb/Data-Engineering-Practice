@@ -5,12 +5,13 @@ from datetime import timedelta
 import boto3
 import time
 import logging
+import os
 
 # Параметри
 WORKGROUP_NAME = "data-platform-workgroup"
 DATABASE_NAME = "dev"
-ROLE_ARN = "arn:aws:iam::251815100262:role/data-platform-redshift-service-role"
-REGION = "eu-north-1"
+ROLE_ARN = os.environ.get("REDSHIFT_ROLE_ARN")
+REGION = os.environ.get("AWS_REGION")
 
 def execute_redshift_sql(sql_query, task_id):
     """
