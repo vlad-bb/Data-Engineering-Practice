@@ -1147,7 +1147,7 @@ Resources:
       TaskRoleArn: !GetAtt DAGSyncTaskRole.Arn
       ContainerDefinitions:
         - Name: dag-sync
-          Image: 'amazon/aws-cli:latest'
+          Image: 'amazon/aws-cli:2.15.30'
           Essential: true
           Environment:
             - Name: S3_BUCKET
