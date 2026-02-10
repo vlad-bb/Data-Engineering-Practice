@@ -28,11 +28,11 @@
 ## Передумови
 
 1. Файли з даними для виконання проєкту знаходяться в директорії `data`, приклади коду в папках `airflow`, `glue`, `spark_standalone`.
-2. Архітектура платформи доступна в файлі `DataPatforn.yml`. Необхідно виконати деплой через сервіс AWS CloudFormation:
+2. Архітектура платформи доступна в файлі `DataPlatform.yml`. Необхідно виконати деплой через сервіс AWS CloudFormation:
 ```bash
 aws cloudformation create-stack \                                                           
   --stack-name <your_user>-data-platform \
-  --template-url file://DataPlatform.yaml \
+  --template-url file://DataPlatform.yml \
   --parameters \
     ParameterKey=ProjectName, ParameterValue=<your-user>-data-platform \
     ParameterKey=RedshiftMasterUsername, ParameterValue=admin \
