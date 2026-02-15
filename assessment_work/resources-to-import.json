@@ -1,0 +1,44 @@
+[
+    {
+        "ResourceType": "AWS::S3::Bucket",
+        "LogicalResourceId": "DataLakeBucket",
+        "ResourceIdentifier": {
+            "BucketName": "data-platform-data-lake-251815100262"
+        }
+    },
+    {
+        "ResourceType": "AWS::S3::Bucket",
+        "LogicalResourceId": "AirflowBucket",
+        "ResourceIdentifier": {
+            "BucketName": "l0tfna0pbiff-airflow"
+        }
+    },
+    {
+        "ResourceType": "AWS::S3::Bucket",
+        "LogicalResourceId": "AthenaBucket",
+        "ResourceIdentifier": {
+            "BucketName": "data-platform-athena-results-251815100262"
+        }
+    },
+    {
+        "ResourceType": "AWS::Glue::Database",
+        "LogicalResourceId": "BronzeDatabase",
+        "ResourceIdentifier": {
+            "DatabaseName": "bronze"
+        }
+    },
+    {
+        "ResourceType": "AWS::Glue::Database",
+        "LogicalResourceId": "SilverDatabase",
+        "ResourceIdentifier": {
+            "DatabaseName": "silver"
+        }
+    },
+    {
+        "ResourceType": "AWS::Glue::Database",
+        "LogicalResourceId": "GoldDatabase",
+        "ResourceIdentifier": {
+            "DatabaseName": "gold"
+        }
+    }
+]
